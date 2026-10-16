@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101116">
+<title>ZAIM AI Agent</title>
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #101116;
+  --panel: #191b23;
+  --border: #303340;
+  --text: #f5f5f7;
+  --muted: #a7a9b5;
+  --gold: #d7b65d;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, Tahoma, Arial, sans-serif;
+}
+.app {
+  max-width: 850px;
+  height: 100dvh;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+}
+header {
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.logo {
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  background: var(--gold);
+  color: #151515;
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  font-size: 22px;
+}
+.brand { flex: 1; }
+.brand small { display: block; color: var(--muted); margin-top: 4px; }
+button, input, textarea { font: inherit; }
+button { cursor: pointer; }
+.icon-btn, .secondary {
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 13px;
+}
+main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 15px;
+}
+.welcome {
+  max-width: 580px;
+  margin: 9vh auto 25px;
+  text-align: center;
+}
+.welcome h1 { font-size: 27px; }
+.welcome p { color: var(--muted); line-height: 1.9; }
+.suggestions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 25px;
+}
+.suggestion {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 14px;
+  border-radius: 14px;
+  text-align: right;
+}
+.messages {
+  max-width: 720px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.message {
+  max-width: 95%;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.9;
+}
+.user {
+  align-self: flex-start;
+  background: #292c37;
+  padding: 12px 16px;
+  border-radius: 17px 17px 5px 17px;
+}
+.assistant { align-self: stretch; padding: 4px; }
+.role { color: var(--gold); font-size: 12px; margin-bottom: 6px; }
+.message pre {
+  direction: ltr;
+  text-align: left;
+  overflow: auto;
+  white-space: pre;
+  padding: 14px;
+  border-radius: 12px;
+  background: #08090d;
+  border: 1px solid var(--border);
+}
+.composer-wrap {
+  padding: 12px 14px max(15px, env(safe-area-inset-bottom));
+}
+.composer {
+  max-width: 720px;
+  margin: auto;
+  background: var(--panel);
+  border: 1px solid #414452;
+  border-radius: 19px;
+  padding: 10px;
+}
+textarea {
+  width: 100%;
+  min-height: 55px;
+  max-height: 180px;
+  resize: vertical;
+  background: transparent;
+  color: var(--text);
+  border: none;
+  outline: none;
+  padding: 9px;
+  line-height: 1.7;
+}
+.composer-foot { display: flex; align-items: center; gap: 10px; }
+.hint { color: var(--muted); font-size: 11px; flex: 1; }
+.send {
+  border: none;
+  border-radius: 12px;
+  background: var(--gold);
+  color: #161616;
+  font-weight: bold;
+  padding: 11px 18px;
+}
+.send:disabled { opacity: .5; }
+.status {
+  max-width: 720px;
+  margin: 0 auto 7px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.settings {
+  position: fixed;
+  inset: 0;
+  background: #000b;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 15px;
+  z-index: 10;
+}
+.settings.open { display: flex; }
+.modal {
+  width: min(100%, 500px);
+  max-height: 90vh;
+  overflow: auto;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 20px;
+}
+.modal-head { display: flex; align-items: center; }
+.modal-head h2 { flex: 1; font-size: 20px; }
+.field { display: block; margin: 15px 0; }
+.field span { display: block; color: var(--muted); margin-bottom: 8px; font-size: 13px; }
+.field input, .field textarea {
+  width: 100%;
+  padding: 12px;
+  border-radius: 11px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+}
+.field input { direction: ltr; text-align: left; }
+.notice {
+  background: #302b1e;
+  color: #f0dfaa;
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  line-height: 1.8;
+}
+.actions { display: flex; gap: 10px; margin-top: 18px; }
+.actions button { flex: 1; }
+.hidden { display: none !important; }
+@media(max-width: 520px) {
+  .suggestions { grid-template-columns: 1fr; }
+  .welcome { margin-top: 6vh; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="logo">Z</div>
+  <div class="brand">
+    <strong>ZAIM AI Agent</strong>
+    <small id="modelStatus">مساعدك الذكي الشخصي</small>
+  </div>
+  <button class="icon-btn" id="settingsBtn" aria-label="الإعدادات">⚙️</button>
+</header>
+
+<main id="main">
+  <section class="welcome" id="welcome">
+    <div style="font-size:38px">👋</div>
+    <h1>أهلًا بيك في ZAIM AI Agent</h1>
+    <p>مساعدك الذكي للبرمجة والتخطيط وتحليل الملفات. اكتب المهمة اللي عايز تنفذها وابدأ المحادثة.</p>
+    <div class="suggestions">
+      <button class="suggestion" data-prompt="صمم لي موقعًا عربيًا حديثًا ومتجاوبًا.">💻 إنشاء موقع</button>
+      <button class="suggestion" data-prompt="ساعدني في التخطيط لبناء تطبيق أندرويد.">📱 تطبيق أندرويد</button>
+      <button class="suggestion" data-prompt="حلل هذه الفكرة وضع خطة لتنفيذها خطوة بخطوة.">🧠 تحليل فكرة</button>
+      <button class="suggestion" data-prompt="اشرح لي كيف أكتشف أخطاء الكود وأصلحها.">🔎 إصلاح الأخطاء</button>
+    </div>
+  </section>
+  <section class="messages" id="messages"></section>
+</main>
+
+<div class="composer-wrap">
+  <div class="status" id="status"></div>
+  <form class="composer" id="chatForm">
+    <textarea id="prompt" rows="2" placeholder="اكتب رسالتك إلى ZAIM AI Agent..."></textarea>
+    <div class="composer-foot">
+      <span class="hint">Enter للإرسال · Shift+Enter لسطر جديد</span>
+      <button class="send" id="sendBtn">إرسال ↑</button>
+    </div>
+  </form>
+</div>
+</div>
+
+<div class="settings" id="settings">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>إعدادات التطبيق</h2>
+      <button class="icon-btn" id="closeSettings">✕</button>
+    </div>
+    <label class="field">
+      <span>مفتاح OpenRouter API</span>
+      <input id="apiKey" type="password" autocomplete="off" placeholder="sk-or-v1-...">
+    </label>
+    <label class="field">
+      <span>معرّف النموذج على OpenRouter</span>
+      <input id="model" placeholder="اكتب معرّف النموذج">
+    </label>
+    <label class="field">
+      <span>رابط خادم ZAIM AI Agent</span>
+      <input id="serverUrl" placeholder="https://your-server.example">
+    </label>
+    <div class="notice">
+      هذه واجهة الشات. يلزم تشغيل خادم Node.js وربطه بعنوانه هنا حتى تعمل المحادثة. لا تنشر مفتاح API في مستودع عام.
+    </div>
+    <div class="actions">
+      <button class="secondary" id="clearChat">مسح المحادثة</button>
+      <button class="send" id="saveSettings">حفظ الإعدادات</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = selector => document.querySelector(selector);
+const state = { messages: [], busy: false };
+
+function getSettings() {
+  try {
+    return JSON.parse(localStorage.getItem("zaim-chat-settings") || "{}");
+  } catch {
+    return {};
+  }
+}
+
+function saveSettings() {
+  const settings = {
+    apiKey: $("#apiKey").value.trim(),
+    model: $("#model").value.trim(),
+    serverUrl: $("#serverUrl").value.trim().replace(/\/+$/, "")
+  };
+  localStorage.setItem("zaim-chat-settings", JSON.stringify(settings));
+  $("#modelStatus").textContent = settings.model || "مساعدك الذكي الشخصي";
+  $("#settings").classList.remove("open");
+  setStatus("تم حفظ الإعدادات على هذا الجهاز.");
+}
+
+function loadSettings() {
+  const settings = getSettings();
+  $("#apiKey").value = settings.apiKey || "";
+  $("#model").value = settings.model || "";
+  $("#serverUrl").value = settings.serverUrl || "";
+  $("#modelStatus").textContent = settings.model || "مساعدك الذكي الشخصي";
+}
+
+function setStatus(message, error = false) {
+  $("#status").textContent = message;
+  $("#status").style.color = error ? "#ff9c9c" : "";
+}
+
+function addMessage(role, content) {
+  const article = document.createElement("article");
+  article.className = "message " + role;
+
+  const label = document.createElement("div");
+  label.className = "role";
+  label.textContent = role === "user" ? "أنت" : "ZAIM AI Agent";
+
+  const body = document.createElement("div");
+  body.textContent = content;
+
+  article.append(label, body);
+  $("#messages").append(article);
+  $("#welcome").classList.add("hidden");
+  $("#main").scrollTop = $("#main").scrollHeight;
+  return article;
+}
+
+async function sendMessage(text) {
+  if (state.busy || !text.trim()) return;
+
+  const settings = getSettings();
+  if (!settings.apiKey || !settings.model || !settings.serverUrl) {
+    $("#settings").classList.add("open");
+    setStatus("أكمل إعدادات المفتاح والنموذج ورابط الخادم أولًا.", true);
+    return;
+  }
+
+  state.busy = true;
+  $("#sendBtn").disabled = true;
+  $("#prompt").value = "";
+  state.messages.push({ role: "user", content: text });
+  addMessage("user", text);
+  const reply = addMessage("assistant", "جاري التفكير...");
+
+  try {
+    const response = await fetch(settings.serverUrl + "/api/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-OpenRouter-Key": settings.apiKey
+      },
+      body: JSON.stringify({
+        model: settings.model,
+        messages: state.messages
+      })
+    });
+
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "تعذّر الاتصال بالخادم.");
+
+    reply.lastElementChild.textContent = data.answer;
+    state.messages.push({ role: "assistant", content: data.answer });
+    $("#modelStatus").textContent = data.model || settings.model;
+    setStatus("اكتملت الإجابة.");
+  } catch (error) {
+    reply.lastElementChild.textContent = "تعذّر إكمال الطلب: " + error.message;
+    setStatus("تأكد من رابط الخادم واتصاله.", true);
+  } finally {
+    state.busy = false;
+    $("#sendBtn").disabled = false;
+    $("#main").scrollTop = $("#main").scrollHeight;
+  }
+}
+
+$("#chatForm").addEventListener("submit", event => {
+  event.preventDefault();
+  sendMessage($("#prompt").value);
+});
+
+$("#prompt").addEventListener("keydown", event => {
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault();
+    $("#chatForm").requestSubmit();
+  }
+});
+
+document.querySelectorAll("[data-prompt]").forEach(button => {
+  button.addEventListener("click", () => {
+    $("#prompt").value = button.dataset.prompt;
+    $("#prompt").focus();
+  });
+});
+
+$("#settingsBtn").onclick = () => $("#settings").classList.add("open");
+$("#closeSettings").onclick = () => $("#settings").classList.remove("open");
+$("#saveSettings").onclick = saveSettings;
+
+$("#clearChat").onclick = () => {
+  state.messages = [];
+  $("#messages").replaceChildren();
+  $("#welcome").classList.remove("hidden");
+  setStatus("تم مسح المحادثة.");
+};
+
+$("#settings").addEventListener("click", event => {
+  if (event.target === $("#settings")) {
+    $("#settings").classList.remove("open");
+  }
+});
+
+loadSettings();
+</script>
+</body>
+</html>
